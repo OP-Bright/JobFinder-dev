@@ -62,14 +62,16 @@ app.get("/findjobs{/:category}", (req, res) => {
   }
 });
 
-})
-
-
 // REPORTING:
 
 // Endpoint for READING all reported links.
 app.get('/api/reported-links', (req, res) => {
-  res.sendStatus(501)
+  ReportedUrl.find({}).then((urls) => {
+    res.status(200).send(urls);
+  }).catch((err) => {
+    console.error('Failed to find reported URLs: ', err);
+    res.sendStatus(500);
+  })
 })
 
 // Endpoint for reading a the number of users who have reported a specific link.
@@ -104,7 +106,7 @@ app.delete('/api/reported-links/:link', (req, res) => {
 })
 
 
-
+// Start the Server. All endpoints should go above this.
 app.listen(port, () => {
   console.log(`App is listening on port http://localhost:${port}`);
 });
