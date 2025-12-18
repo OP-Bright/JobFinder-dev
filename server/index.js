@@ -110,14 +110,34 @@ app.post('/api/reported-links', (req, res) => {
 // this function will find the current state of the reported link, and add the user to the usersReported array. This ensures that the client doesn't need to re-insert ALL previous users.
 // Should not add duplicate users, if the userID is already in the array, do not add it again.
 app.patch('/api/reported-links', (req, res) => {
-  res.sendStatus(501)
+  // Note, this can cause some serious errors if used on links that have not yet been added to the database. 
+  // Make sure the client checks that the link is in the database before updating. If it's not, post, don't patch!
+  ReportedUrl.find({ url: req.body.link }).then((url) => { // find the specific url...
+    if (url[0].usersReported.includes(req.body.user)) { // if the user has already reported this site...
+      res.sendStatus(409); // there is a conflict! State as such.
+    } else { // if they have not...
+      const updatedUsers = url.usersReported;
+      updatedUsers.push(req.body.user); // create a new version of the array with the user added
+      return ReportedUrl.updateOne({_id: url._id}, {usersReported: updatedUsers}).then(() => { // change the array to include the user!
+        res.sendStatus(200);
+      })
+    }
+  }).catch((err) => { //error handling
+    console.error('An issue occured while finding or updating the provided URL: ', err);
+    res.sendStatus(500);
+  })
 })
 
 // Endpoint for DELETING a reported link.
   // This should basically only be used by developers for now.
   // This will be really needed if we make a whitelist feature later down the line.
-app.delete('/api/reported-links/:link', (req, res) => {
-  res.sendStatus(501)
+  // provide the ID of a url in the database in the query, and the request will remove it. If you're deleting it, you must know it exists, which means that you likely have access to the id.
+app.delete('/api/reported-links', (req, res) => {
+  ReportedUrl.findByIdAndDelete(req.query.urlId).then(() => {
+    res.sendStatus(200);
+  }).catch((err) => {
+    console.error("A problem occured while deleting the reported link: ", err);
+  })
 })
 
 
