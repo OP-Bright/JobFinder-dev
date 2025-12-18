@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 
-main().catch((err) => console.log("Failed to connect to database", err));
+main().then(() => {
+  console.info("Connected to the database");
+}).catch((err) => console.log("Failed to connect to database", err));
 
 async function main() {
   await mongoose.connect("mongodb://127.0.0.1:27017/jobfinder");
