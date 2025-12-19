@@ -73,7 +73,6 @@ app.get("/api/findjobs{/:category}", (req, res) => {
 // route allows client to input suggested preferences to database for admin review
 app.post("/api/findjobs", (req, res) => {
 
-
 });
 
 
