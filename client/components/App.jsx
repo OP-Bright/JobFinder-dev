@@ -1,37 +1,40 @@
 import React from "react";
 import { useState, useRef } from "react";
+import { Routes, Route } from "react-router";
 import axios from "axios";
 
+import Home from "./Home.jsx";
 import FindJobs from "./FindJobs.jsx";
 
 export default function App() {
   const [jobResults, setJobResults] = useState([]);
   const countRef = useRef(0);
-(jobResults)
+
   const getJobListings = (category, prefsArray) => {
     axios
       // if category is undefined || is used to check that, then it sets category to be "nothing"
       // without || category being undefined literally returns '/findjobs/undefined' instead of '/findjobs/'
-      .get(`/findjobs/${category || ""}`)
+      .get(`/api/findjobs/${category || ""}`)
       .then((jobsObj) => {
         // if category not provided or we're doing initial render, return default job list
         if (!category) {
-          const noPrefJobs = (jobsObj.data);
+          const noPrefJobs = jobsObj.data;
           setJobResults(noPrefJobs);
         } else if (category && prefsArray.length === 1) {
           // one category provided, replace all existing job listings
-          const firstPrefJobs = (jobsObj.data);
+          const firstPrefJobs = jobsObj.data;
           setJobResults(firstPrefJobs);
         } else {
           // otherwise category was provided, but there's more than one preference
-          const additionalPrefJobs = (jobsObj.data);
+          const additionalPrefJobs = jobsObj.data;
           // helper only needed here to ensure possible job category overlap does
           // not return duplicate results when merging additional category's job listings
-          setJobResults(filterUniqueJobs(additionalPrefJobs.concat(jobResults)));
+          setJobResults(
+            filterUniqueJobs(additionalPrefJobs.concat(jobResults))
+          );
         }
       })
       .catch((err) => {
-        
         console.error("Failed to GET jobs from endpoint", err);
       });
 
@@ -58,5 +61,13 @@ export default function App() {
     };
   };
 
-  return <FindJobs jobs={jobResults} getJobListings={getJobListings} />;
+  return (
+    <Routes>
+      <Route path="/" element={<Home />}></Route>
+      <Route
+        path="/findjobs"
+        element={<FindJobs jobs={jobResults} getJobListings={getJobListings} />}
+      ></Route>
+    </Routes>
+  );
 }
