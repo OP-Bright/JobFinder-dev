@@ -7,7 +7,7 @@ import FindJobs from "./FindJobs.jsx";
 export default function App() {
   const [jobResults, setJobResults] = useState([]);
   const countRef = useRef(0);
-
+(jobResults)
   const getJobListings = (category, prefsArray) => {
     axios
       // if category is undefined || is used to check that, then it sets category to be "nothing"
@@ -27,7 +27,7 @@ export default function App() {
           const additionalPrefJobs = (jobsObj.data);
           // helper only needed here to ensure possible job category overlap does
           // not return duplicate results when merging additional category's job listings
-          setJobResults(filterUniqueJobs(jobResults.concat(additionalPrefJobs)));
+          setJobResults(filterUniqueJobs(additionalPrefJobs.concat(jobResults)));
         }
       })
       .catch((err) => {

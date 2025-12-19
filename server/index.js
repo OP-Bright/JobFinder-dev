@@ -40,8 +40,7 @@ app.get("/protected", (req, res) => {
 // will send back default job list for now
 app.get("/findjobs{/:category}", (req, res) => {
   const { category } = req.params;
-  // only want 6 job results for now (will probably change)
-  const results_per_page = 6;
+  const results_per_page = 50
   // if category parameter is not defined send client default job listings
   axios
     .get("http://api.adzuna.com/v1/api/jobs/us/search/1", {
