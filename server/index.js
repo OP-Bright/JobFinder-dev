@@ -34,7 +34,7 @@ app.get('/signin', (req, res) => {
 //when someone visits this link they should be authenticated w/ google.
 app.get('/auth/google',
   passport.authenticate('google', {scope: ['email', 'profile']})
-
+  
 )
 
 //Protected route (User can't visit this route unless logged in w/ google)
@@ -45,28 +45,28 @@ app.get("/protected", (req, res) => {
 
 // route to allow client to make GET request using /findjobs/:category endpoint
 // will send back default job list for now
-app.get("/findjobs{/:category}", (req, res) => {
+app.get("/api/findjobs{/:category}", (req, res) => {
   const { category } = req.params;
   const results_per_page = 50
   // if category parameter is not defined send client default job listings
   axios
-    .get("http://api.adzuna.com/v1/api/jobs/us/search/1", {
-      params: {
-        app_id,
-        app_key,
-        results_per_page,
-        category: category || "",
-      },
-    })
-    .then((jobs) => {
-      const jobsArray = jobs.data.results;
-      res.status(200).send(jobsArray);
-    })
-    .catch((err) => {
-      res.sendStatus(500);
-      console.error("Failed to GET jobs", err);
-    });
-
+  .get("http://api.adzuna.com/v1/api/jobs/us/search/1", {
+    params: {
+      app_id,
+      app_key,
+      results_per_page,
+      category: category || "",
+    },
+  })
+  .then((jobs) => {
+    const jobsArray = jobs.data.results;
+    res.status(200).send(jobsArray);
+  })
+  .catch((err) => {
+    res.sendStatus(500);
+    console.error("Failed to GET jobs", err);
+  });
+  
 });
 
 // REPORTING:
@@ -147,6 +147,10 @@ app.delete('/api/reported-links', (req, res) => {
   })
 })
 
+// catch all route to allow react router to take control of routing
+app.get('/*any', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../dist', 'index.html'))
+});
 
 // Start the Server. All endpoints should go above this.
 app.listen(port, () => {
