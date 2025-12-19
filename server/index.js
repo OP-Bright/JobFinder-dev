@@ -8,9 +8,8 @@ const { app_id, app_key } = process.env;
 
 const path = require("path");
 const {
-  Interest,
-  Skill,
-  ExperienceLevel,
+  Preference,
+  SuggestedPreference,
   User,
   ReportedUrl,
 } = require("./db/index.js");
@@ -43,6 +42,8 @@ app.get("/protected", (req, res) => {
   res.send("Hello");
 });
 
+// Preferences API Routes:
+
 // route to allow client to make GET request using /findjobs/:category endpoint
 // will send back default job list for now
 app.get("/api/findjobs{/:category}", (req, res) => {
@@ -68,6 +69,13 @@ app.get("/api/findjobs{/:category}", (req, res) => {
   });
   
 });
+
+// route allows client to input suggested preferences to database for admin review
+app.post("/api/findjobs", (req, res) => {
+
+
+});
+
 
 // REPORTING:
 
