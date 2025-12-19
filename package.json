@@ -4,7 +4,7 @@
   "description": "An app designed to help someone searching for a job organize their work. WIP",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --watch",
     "start": "nodemon server/index.js",
     "lint": "eslint"
   },
