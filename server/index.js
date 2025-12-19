@@ -1,7 +1,8 @@
 const express = require("express");
+const passport = require("passport")
 const axios = require("axios");
-
 const dotenv = require("dotenv/config");
+require('./auth.js')
 const { app_id, app_key } = process.env;
 
 const path = require("path");
@@ -24,10 +25,16 @@ app.use(express.urlencoded());
 
 //ROUTES:
 
-//Base route, link for user to click to sign in w/ google
-app.get("/", (req, res) => {
+//Base sign in route, link for user to click to sign in w/ google
+app.get('/signin', (req, res) => {
   res.send('<a href="/auth/google">Authenticate w/ Google</a>');
 });
+
+//when someone visits this link they should be authenticated w/ google.
+app.get('/auth/google',
+  passport.authenticate('google', {scope: ['email', 'profile']})
+
+)
 
 //Protected route (User can't visit this route unless logged in w/ google)
 //When a user is logged in we will have access to their details
