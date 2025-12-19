@@ -15,7 +15,7 @@ import axios from "axios";
 // they can still input it but it lets them know.
 
 // BUTTON
-// reports the link of the "current job", since this is just an example it uses a default one.
+// reports the link of the "current job", since this is just an example it uses "example.com" for every report.
 // FIRST, it checks if the current userID is on this link...
 // If it's not...
   // did it actually find the link when it checked for it?
@@ -26,7 +26,7 @@ import axios from "axios";
     // posts the link along with the current userID
     // gives some feedback to the user that their report has been stored.
 // If the user HAS already reported the link...
-  // give feedback to the user, telling them they have already reported this link.
+  // give feedback to the user, telling them they have already reported this link, and that the additional report was not sent.
   // ideas: error message like the success feedback.
   // button is grayed out and unclickable, but this means that it has to check for the link every time by default.
 
@@ -39,55 +39,55 @@ export default function reportInputExamples() {
   // use this to compare links with the database. returns the then-able promise.
   const getReportedLink = (url) => {
     return axios.get('/api/reported-links', url ? {params: {link: url}} : {}).catch((err) => {
-        console.error("template failure message: ", err);
+        console.error(`Something went wrong while GETting a report. Url passed in: ${url}`, err);
       });
   };
 
   // use this to create a new report if no one has ever reported the link.
+  // in the future, it should always just use the currently logged in user, rather than needing a userID passed in.
   const postReport = (url, userID) => {
-    axios.post('/api/reported-links').catch((err) => {
-        console.error("template failure message: ", err);
+    axios.post('/api/reported-links', {report: {
+      url, 
+      usersReported: [userID]
+    }}).catch((err) => {
+        console.error("Something went wrong while making a new report: ", err);
       });
   };
   
   // use this to add a userID to a prexisting report.
   // in the future, it should always just use the currently logged in user, rather than needing a userID passed in.
   const patchReport = (url, userID) => {
-    axios.patch('/api/reported-links').catch((err) => {
-        console.error("template failure message: ", err);
+    axios.patch('/api/reported-links', {
+      user: userID,
+      link: url
+    }).catch((err) => {
+        console.error("Something went wrong while adding the user to the report: ", err);
       });
   };
 
   // checks if the url provided has been reported...
   // displays warning if it has.
-  const handleClickOffInput = () => {
+  const handleClickOffInput = (inputValue) => {
 
   }
 
-  // first, it checks if the link has ever been reported...
-  // if it has...
-    // has the user already reported it?
-    // if so...
-      // display a message saying that they have already reported this link.
-    // if not...
-      // make a PATCH request, and send the current userID and related link. 
-      // (for this example, the link will always be example.com, but really it would be attatched to the job that the report button is attatched to.)
-      // once the request is complete, display the success message.
-  // if it has not...
-    // make a POST request to post the new report.
-    // once the post request has gone through, display the success message.
   const handleReportSubmission = (reportedUrl) => {
+      // first, it checks if the link has ever been reported...
     getReportedLink(reportedUrl).then((urlArr) => {
-      if (urlArr.length === 0) {
-        if (urlArr[0].usersReported.includes("fakeID-Client")) {
+      if (urlArr.length === 0) {   // if it has...
+        if (urlArr[0].usersReported.includes("fakeID-Client")) { // has the user already reported it?
+              // if so, display a message saying that they have already reported this link.
           setWarnMessage(true);
-        } else {
-          patchReport("example.com", "fakeID-Client").then(() => {
+        } else { // if not...
+          // make a PATCH request, and send the current userID and related link. 
+          patchReport("example.com", "fakeID-Client").then(() => { // (for this example, the link will always be example.com, but really it would be attatched to the job that the report button is attatched to.)
+            // once the request is complete, display the success message.
             setSuccessMessage(true);
           })
         }
-      } else {
-        postReport("example.com", "fakeID-Client").then(() => {
+      } else { // if it has not...
+        postReport("example.com", "fakeID-Client").then(() => { // make a POST request to post the new report.
+          // once the post request has gone through, display the success message.
           setSuccessMessage(true);
         })
       }
@@ -95,10 +95,11 @@ export default function reportInputExamples() {
   }
 
   return (<div>
-    {/* <input 
+    <input 
       type="text"
       placeholder="Your jobs link, or location..."
-    /> */}
+      onBlur={(event) => {handleClickOffInput(event.target.value)}}
+    />
     <button 
     onClick={(event) => {handleReportSubmission('example.com')}}
     >Report Job</button>
