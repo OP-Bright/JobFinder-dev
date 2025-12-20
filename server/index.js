@@ -95,27 +95,26 @@ app.get('/logout', (req, res) => {
 // will send back default job list for now
 app.get("/findjobs{/:category}", (req, res) => {
   const { category } = req.params;
-  // only want 8 job results for now (will probably change)
-  const results_per_page = 8;
+  const results_per_page = 50
   // if category parameter is not defined send client default job listings
-  if (!category) {
-    axios
-      .get("http://api.adzuna.com/v1/api/jobs/us/search/1", {
-        params: {
-          app_id,
-          app_key,
-          results_per_page,
-        },
-      })
-      .then((jobs) => {
-        const jobsArray = jobs.data.results;
-        res.status(200).send(jobsArray);
-      })
-      .catch((err) => {
-        res.sendStatus(500);
-        console.error("Failed to GET jobs", err);
-      });
-  }
+  axios
+    .get("http://api.adzuna.com/v1/api/jobs/us/search/1", {
+      params: {
+        app_id,
+        app_key,
+        results_per_page,
+        category: category || "",
+      },
+    })
+    .then((jobs) => {
+      const jobsArray = jobs.data.results;
+      res.status(200).send(jobsArray);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error("Failed to GET jobs", err);
+    });
+
 });
 
 // REPORTING:
@@ -128,7 +127,7 @@ app.get('/api/reported-links', (req, res) => {
   if (req.query.link) { // if there is a link provided....
     // find the URL that matches
     ReportedUrl.find({ url: req.query.link }).then((url) => {
-      if(url.length === 0) { // if it didn't find anything, then it was not found.
+      if (url.length === 0) { // if it didn't find anything, then it was not found.
         res.sendStatus(404);
       } else { // if it did find something, send all of the details about that URL. (The same URL should never get added by the client.)
         res.status(200).send(url[0]);
@@ -172,9 +171,9 @@ app.patch('/api/reported-links', (req, res) => {
     if (url[0].usersReported.includes(req.body.user)) { // if the user has already reported this site...
       res.sendStatus(409); // there is a conflict! State as such.
     } else { // if they have not...
-      const updatedUsers = url.usersReported;
+      const updatedUsers = url[0].usersReported;
       updatedUsers.push(req.body.user); // create a new version of the array with the user added
-      return ReportedUrl.updateOne({_id: url._id}, {usersReported: updatedUsers}).then(() => { // change the array to include the user!
+      return ReportedUrl.updateOne({_id: url[0]._id}, {usersReported: updatedUsers}).then(() => { // change the array to include the user!
         res.sendStatus(200);
       })
     }
@@ -185,9 +184,9 @@ app.patch('/api/reported-links', (req, res) => {
 })
 
 // Endpoint for DELETING a reported link.
-  // This should basically only be used by developers for now.
-  // This will be really needed if we make a whitelist feature later down the line.
-  // provide the ID of a url in the database in the query, and the request will remove it. If you're deleting it, you must know it exists, which means that you likely have access to the id.
+// This should basically only be used by developers for now.
+// This will be really needed if we make a whitelist feature later down the line.
+// provide the ID of a url in the database in the query, and the request will remove it. If you're deleting it, you must know it exists, which means that you likely have access to the id.
 app.delete('/api/reported-links', (req, res) => {
   ReportedUrl.findByIdAndDelete(req.query.urlId).then(() => {
     res.sendStatus(200);
