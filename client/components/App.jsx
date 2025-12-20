@@ -63,7 +63,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Home />}></Route>
+      <Route path="/" element={<Home jobs={jobResults} getJobListings={getJobListings}/>}></Route>
       <Route
         path="/findjobs"
         element={<FindJobs jobs={jobResults} getJobListings={getJobListings} />}
