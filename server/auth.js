@@ -27,7 +27,7 @@ passport.use(new GoogleStrategy({
     //or find the user if they have logged in
     try {
       //look for the user where googleId = profile.id (to see if that user exist)
-      const user = await User.findOne({googleId: profile.id});
+      let user = await User.findOne({googleId: profile.id});
       //if user exist
       if(user){
         //invoke cb and pass in user
@@ -46,7 +46,7 @@ passport.use(new GoogleStrategy({
 
 
 passport.serializeUser((user, cb) => {
-  cb(null, user);
+  cb(null, user.id);//only store user id
 
 });
 

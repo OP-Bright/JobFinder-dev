@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
     type: String
   },
 
+  email: {
+    type: String
+  },
+
   jobs: [],
   preferences: [],
 });
