@@ -11,6 +11,14 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: 'asset/resource',
+      },
+      {
         test: /\.(?:js|jsx|mjs|cjs)$/,
         exclude: /node_modules/,
         use: {
@@ -31,4 +39,5 @@ module.exports = {
       template: "./client/index.html",
     }),
   ],
+
 };
