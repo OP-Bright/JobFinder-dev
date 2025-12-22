@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router";
 import axios from "axios";
 
 import Home from "./Home.jsx";
+import SignIn from "./SignIn.jsx";
 import FindJobs from "./FindJobs.jsx";
 
 export default function App() {
@@ -63,7 +64,9 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Home jobs={jobResults} getJobListings={getJobListings}/>}></Route>
+      <Route path="/" element={<Home />}></Route>
+      <Route path="/signin" element={<SignIn />}></Route>
+
       <Route
         path="/findjobs"
         element={<FindJobs jobs={jobResults} getJobListings={getJobListings} />}

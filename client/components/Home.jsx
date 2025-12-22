@@ -7,7 +7,9 @@ export default function Home({ jobs, getJobListings }) {
     <div>
       <h1>Home Page (WIP)</h1>
       <Link to="/findjobs">Find Jobs</Link>
-    <ExampleJobs exampleJobs={jobs} getJobListings={getJobListings} />
+      <div>
+        <Link to="/signin">Signin w/ Google</Link>
+      </div>
     </div>
   );
 }

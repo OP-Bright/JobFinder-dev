@@ -23,6 +23,11 @@
   "dependencies": {
     "@babel/preset-env": "^7.28.5",
     "@babel/preset-react": "^7.28.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@toolpad/core": "^0.16.0",
     "axios": "^1.13.2",
     "babel-core": "^6.26.3",
     "babel-loader": "^10.0.0",
