@@ -48,16 +48,10 @@ app.use(passport.session());
 
 //ROUTES:
 
-//Base sign in route, link for user to click to sign in w/ google
-app.get("/signin", (req, res) => {
-  res.send('<a href="/auth/google">Authenticate w/ Google</a>');
-});
-
 //when someone visits this link they should be authenticated w/ google.
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile"] }) //scope of what ever is included in the profile
-);
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email']})//scope of what ever is included in the profile
+)
 
 //when someone is authenticated and signs in
 app.get(
@@ -86,7 +80,8 @@ app.get("/logout", (req, res) => {
   req.logout();
   //destroy current session
   req.session.destroy();
-  res.send("You are logged out").redirect("/signin");
+  res.send('You are logged out')
+  res.redirect('/signin')
 });
 
 // Preferences API Routes:
