@@ -10,6 +10,9 @@ export default defineConfig([
   },
   pluginReact.configs.flat.recommended,
   {
+    rules: {
+      "react/prop-types": "off",
+    },
     settings: {
       react: {
         version: "detect",
