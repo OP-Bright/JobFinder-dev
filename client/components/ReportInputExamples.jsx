@@ -93,9 +93,7 @@ export default function ReportInputExamples() {
   // if it has not, it doesn't need to do a thing!
   
   const handleClickOffInput = (inputValue) => {
-    console.log(`checking to see if ${inputValue} exists`);
     getReportedLink(inputValue).then((reportObj) => {
-      console.log("click off: urls found ", reportObj.data)
       if(reportObj.data) {
         if (reportObj.data.usersReported.length >= 3) {
           setReportCount(reportObj.data.usersReported.length);
@@ -106,11 +104,9 @@ export default function ReportInputExamples() {
   };
 
   const handleReportSubmission = (reportedUrl) => {
-    console.log("handling report for ", reportedUrl);
 
     // first, it checks if the link has ever been reported...
     getReportedLink(reportedUrl).then((reportObj) => {
-      console.log("report submit: urls found", reportObj.data)
       if (reportObj.data) {
         // if it has...
         if (reportObj.data.usersReported.includes("fakeID-Client")) {
