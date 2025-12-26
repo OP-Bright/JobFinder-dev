@@ -2,6 +2,9 @@ import React from "react";
 import { useState, useEffect, useEffectEvent } from "react";
 import SuggestedListEntry from "./SuggestedListEntry.jsx";
 
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
 import axios from "axios";
 
 /* 
@@ -15,127 +18,29 @@ import axios from "axios";
   on its jobResults state to be updated.
 */
 
-export default function SuggestedJobList({ jobs, getJobListings }) {
-  const [selectedPrefs, setSelectedPrefs] = useState(new Set());
-  let [limit, setLimit] = useState(4);
-  const [suggestionResponse, setSuggestionResponse] = useState("");
-  const [suggestionInputValue, setSuggestionInputValue] = useState("");
+export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
+  let [limit, setLimit] = useState(8);
+  // executes logic on initial render & every time a change is made to userInfo
 
-  // executes logic on initial render & every time a change is made to selectedPrefs
+
   useEffect(() => {
-    // if there is no preferences, render default jobs from API
-    if (selectedPrefs.size === 0) {
-      getDefaultJobListingsEvent();
-    }
-    // attempted every render, used to render preference specific jobs from API
-    getJobListingsEvent();
-  }, [selectedPrefs]);
-
-  // handles suggestion success/fail message visibility
-  // should disappear after 5 seconds
-  useEffect(() => {
-    // 5 second timer after a value is
-    // given to suggestionResponse state
-    const visibilityTimer = setTimeout(() => {
-      setSuggestionResponse("");
-    }, 5000);
-
-    // cleanup function that cancels timer if
-    // component is unmounted before the timer finishes
-    // prevents memory leak
-    return () => {
-      clearTimeout(visibilityTimer);
-    };
-  }, [suggestionResponse]);
-
-  // an Event for getJobListings to prevent stale closures
-  const getDefaultJobListingsEvent = useEffectEvent(() => {
-    getJobListings();
-    return; // do nothing, end function (page would initally load very slow without return)
-  });
-
-  // an Event for getJobListings (with arguments provided)
-  const getJobListingsEvent = useEffectEvent(() => {
-    // loop won't run until preferences are provided
-    for (const pref of selectedPrefs) {
-      let prefsArray = Array.from(selectedPrefs);
-      getJobListings(pref, prefsArray);
-    }
-    return; // do nothing, end function (page would initally load very slow without return)
-  });
-
-  // when box is checked/unchecked, this function
-  // adds/removes the preferences in selectedPrefs state
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-
-    setSelectedPrefs((prevSelectedPrefs) => {
-      // make copy of current selectedPrefs
-      // state to safely mutate set, then
-      // returned changes so that setSelectedPrefs
-      // may update state with changes to set
-      const newPrefs = new Set(prevSelectedPrefs);
-
-      if (checked) {
-        // if checked add preference
-        newPrefs.add(name);
-      } else {
-        // if unchecked delete preference
-        newPrefs.delete(name);
+    if (userPrefs.length !== 0) {
+      for (const pref of userPrefs) {
+        getJobListingsEvent(pref, userPrefs);
+        return;
       }
-      return newPrefs;
-    });
-  };
+    }
+    getJobListingsEvent()
+  }, [userPrefs]);
 
-  // track suggestion input field's value
-  // going to be used to get the length
-  // to render character count
-  const handleInputChange = (e) => {
-    setSuggestionInputValue(e.target.value);
-  };
-
-  const handleSubmit = (e) => {
-    // Prevent browser from reloading page
-    e.preventDefault();
-
-    // Read form data
-    const form = e.target;
-    const formData = new FormData(form);
-    console.log(formData);
-
-    // passing formData directly into POST request
-    axios
-      .post("/api/findjobs", {
-        name: formData.get("suggestion-input"),
-      })
-      // if successful suggestionResponse state with String
-      .then(() => {
-        setSuggestionResponse("Sent! Awaiting Approval.");
-      })
-      // if fail
-      .catch((err) => {
-        console.log(err.response.data.name);
-        const errorName = err.response.data.name;
-        if (errorName === "minlength") {
-          setSuggestionResponse(
-            "Failed to Send! Minimum Characters Required: 2"
-          );
-        } else if (errorName === "maxlength") {
-          setSuggestionResponse(
-            "Failed to Send! Maximum Characters Allowed: 50"
-          );
-        } else {
-          // all other errors
-          console.error(err);
-          setSuggestionResponse(`Failed to Send! Error Code: ${err.status}`);
-        }
-      });
-  };
+  const getJobListingsEvent = useEffectEvent((pref, prefsArr) => {
+    getJobListings(pref, prefsArr);
+  });
 
   // method used to render 5 more
   // jobs listings to the page
   const renderMoreJobs = () => {
-    setLimit((limit += 5));
+    setLimit((limit += 8));
   };
 
   /* Copy of current jobs listings state from App.jsx.
@@ -151,82 +56,8 @@ export default function SuggestedJobList({ jobs, getJobListings }) {
   return (
     <div>
       <h1>Find Jobs</h1>
-      <h2>Choose your job preferences</h2>
-      <div
-        className="job-preferences-checkboxes"
-        style={{ display: "flex", gap: "10px" }}
-      >
-        <div>
-          <label htmlFor="it-jobs">
-            <input
-              id="it-jobs"
-              type="checkbox"
-              name="it-jobs"
-              checked={selectedPrefs.has("it-jobs")}
-              onChange={handleCheckboxChange}
-            ></input>
-            Information Technology
-          </label>
-        </div>
-        <div>
-          <label htmlFor="customer-services-jobs">
-            <input
-              id="customer-services-jobs"
-              type="checkbox"
-              name="customer-services-jobs"
-              checked={selectedPrefs.has("customer-services-jobs")}
-              onChange={handleCheckboxChange}
-            ></input>
-            Customer Service
-          </label>
-        </div>
-        <div>
-          <label htmlFor="engineering-jobs">
-            <input
-              id="engineering-jobs"
-              type="checkbox"
-              name="engineering-jobs"
-              checked={selectedPrefs.has("engineering-jobs")}
-              onChange={handleCheckboxChange}
-            ></input>
-            Engineering
-          </label>
-        </div>
-      </div>
-      <div>
-        <h3>
-          Don&apos;t see a preference that matches you?
-          <br />
-          Suggest More Here:
-        </h3>
-        <div>
-          <form method="post" onSubmit={handleSubmit}>
-            <label>
-              <input
-                name="suggestion-input"
-                type="text"
-                onChange={handleInputChange}
-                required={true}
-              ></input>
-            </label>
-            <button type="submit">Send Preference</button>&nbsp;
-            {suggestionResponse}
-          </form>
-          Character Count: {suggestionInputValue.length}
-          <br />
-        </div>
-      </div>
-      <div
-        className="job-list"
-        style={{
-          display: "flex",
-          height: "560px",
-          width: "100%",
-          border: "2px solid black",
-          overflow: "auto",
-        }}
-      >
-        <div className="job-list-entry">
+      <Container maxWidth="xl">
+        <Grid container spacing={2} overflow="auto" className="job-list">
           {jobsToRender.map((job) => {
             return (
               <SuggestedListEntry
@@ -238,8 +69,8 @@ export default function SuggestedJobList({ jobs, getJobListings }) {
               />
             );
           })}
-        </div>
-      </div>
+        </Grid>
+      </Container>
       <div
         className="load-more-jobs"
         style={{
@@ -255,10 +86,6 @@ export default function SuggestedJobList({ jobs, getJobListings }) {
           */}
         <button
           onClick={() => {
-            if (selectedPrefs.size === 0) {
-              getDefaultJobListingsEvent();
-            }
-            getJobListingsEvent();
             renderMoreJobs();
           }}
         >

@@ -1,10 +1,11 @@
 import React from "react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Routes, Route } from "react-router";
 import axios from "axios";
 
 import Home from "./Home.jsx";
 import SignIn from "./SignIn.jsx";
+import Profile from "./Profile.jsx";
 import FindJobs from "./FindJobs.jsx";
 import DashBoard  from "./Dashboard.jsx";
 import NavBar from "./Navbar.jsx";
@@ -12,8 +13,32 @@ import NavBar from "./Navbar.jsx";
 export default function App() {
   const [jobResults, setJobResults] = useState([]);
   const countRef = useRef(0);
+  // if user is logged in
+  const [userInfo, setUserInfo] = useState(null)
+  const [userPrefs, setUserPrefs] = useState([])
+
+
+useEffect(() => {
+getUserInfo()
+}, [])
+
+
+
+  const getUserInfo = () => {
+    axios.get('/api/user-info')
+      .then(response => {
+        const userObj = response.data;
+        const { preferences } = response.data
+        setUserInfo(userObj)
+        setUserPrefs(preferences)
+      })
+      .catch(err => {
+        console.error(err)
+      });
+  }
 
   const getJobListings = (category, prefsArray) => {
+    
     axios
       // if category is undefined || is used to check that, then it sets category to be "nothing"
       // without || category being undefined literally returns '/findjobs/undefined' instead of '/findjobs/'
@@ -71,10 +96,11 @@ export default function App() {
       <Route path="/" element={<Home />}></Route>
       <Route path="/signin" element={<SignIn />}></Route>
       <Route path="/dashboard" element={<DashBoard />}></Route>
+      <Route path='/profile' element={<Profile userInfo={userInfo} />}></Route>
 
       <Route
         path="/findjobs"
-        element={<FindJobs jobs={jobResults} getJobListings={getJobListings} />}
+        element={userInfo ? <FindJobs jobs={jobResults} getJobListings={getJobListings} userInfo={userInfo} userPrefs={userPrefs}/> : null}
       ></Route>
     </Routes>
   </>
