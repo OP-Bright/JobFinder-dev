@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect, useState, useEffectEvent } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   MenuItem,
@@ -23,6 +23,29 @@ import axios from "axios";
 export default function Profile({ userInfo }) {
   const [storedPrefs, setStoredPrefs] = useState([]);
   const [selectedPrefs, setSelectedPrefs] = useState([]);
+  const [suggestionInputValue, setSuggestionInputValue] = useState("");
+  const [suggestionResponse, setSuggestionResponse] = useState("")
+
+
+
+
+  // handles suggestion success/fail message visibility
+  // should disappear after 5 seconds
+  useEffect(() => {
+    // 5 second timer after a value is
+    // given to suggestionResponse state
+    const visibilityTimer = setTimeout(() => {
+      setSuggestionResponse("");
+    }, 5000);
+
+    // cleanup function that cancels timer if
+    // component is unmounted before the timer finishes
+    // prevents memory leak
+    return () => {
+      clearTimeout(visibilityTimer);
+    };
+  }, [suggestionResponse]);
+
 
   // on intitial render/on change of stored preferences,
   // trigger rerender and update storedPrefs state
@@ -45,21 +68,6 @@ export default function Profile({ userInfo }) {
       });
   };
 
-  // an Event for getJobListings to prevent stale closures
-  const getDefaultJobListingsEvent = useEffectEvent(() => {
-    getJobListings();
-    return; // do nothing, end function (page would initally load very slow without return)
-  });
-
-  // an Event for getJobListings (with arguments provided)
-  const getJobListingsEvent = useEffectEvent(() => {
-    // loop won't run until preferences are provided
-    for (const pref of selectedPrefs) {
-      getJobListings(pref, prefsArray);
-    }
-    return; // do nothing, end function (page would initally load very slow without return)
-  });
-
   const handleChange = (event) => {
     const {
       target: { value },
@@ -71,7 +79,7 @@ export default function Profile({ userInfo }) {
   };
 
   const handleClick = () => {
-    console.log(userInfo);
+  
     axios
       .patch(`/api/update-preferences/${userInfo._id}`, {
         preferences: selectedPrefs,
@@ -84,119 +92,159 @@ export default function Profile({ userInfo }) {
       });
   };
 
-  // before render check if user is signed in,
-  if (!userInfo) {
-    return <div>You should not be here buddy</div>;
-  }
+  // track suggestion input field's value
+  // going to be used to get the length
+  const handleInputChange = (e) => {
+    setSuggestionInputValue(e.target.value);
+  };
 
-  return (
-    <Container
-      sx={{
-        height: "92vh",
-      }}
-    >
-      <Box
+  const handleSend = (e) => {
+    // passing formData directly into POST request
+    axios
+      .post("/api/suggest-preferences", {
+        name: suggestionInputValue,
+      })
+      // if successful suggestionResponse state with String
+      .then(() => {
+        setSuggestionResponse("Sent! Awaiting Approval.");
+      })
+      // if fail
+      .catch((err) => {
+        console.error(err);
+        setSuggestionResponse(
+          `Something went wrong. Error Code: ${err.status}`
+        );
+      });
+    }
+
+    // before render check if user is signed in,
+    if (!userInfo) {
+      return <div>You should not be here buddy</div>;
+    }
+
+    return (
+      <Container
         sx={{
-          pt: 4,
-          width: "100%",
-          textAlign: "center",
+          height: "92vh",
         }}
       >
-        <Paper elevation={4}>
-          <Card sx={{ width: "100%", height: "100%" }}>
-            <CardContent>
-              <Typography variant="h2">
-                Signed In As: {userInfo.displayName}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Paper>
-      </Box>
-      <Box
-        sx={{
-          pt: 4,
-          height: "80%",
-          width: "100%",
-          textAlign: "center",
-        }}
-      >
-        <Paper elevation={6}>
-          <Card sx={{ width: "100%", height: "100%" }}>
-            <CardContent>
-              <Typography variant="h2" sx={{ mt: 4}}>Choose your Preferences!</Typography>
-            </CardContent>
-            <FormControl sx={{ m: 1, width: 300, mt: 4}}>
-              <InputLabel>Preferences</InputLabel>
-              <Select
-                labelId="preferences-multiple-chip-label"
-                id="preferences-multiple-chip"
-                multiple
-                value={selectedPrefs}
-                onChange={handleChange}
-                input={<OutlinedInput label="Preferences" />}
-                renderValue={(selected) => (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                    {selected.map((prefValue, i) => (
-                      <Chip
-                        key={i}
-                        label={prefValue
-                          .replace(/-/g, " ")
-                          .replace(/jobs/g, "")
-                          .toUpperCase()}
-                      />
-                    ))}
-                  </Box>
-                )}
-              >
-                {storedPrefs.map((pref, i) => (
-                  <MenuItem key={i} value={pref}>
-                    {pref.replace(/-/g, " ").replace(/jobs/g, "").toUpperCase()}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Button
-                variant="contained"
-                color="inherit"
-                size="large"
-                sx={{ mt: 1 }}
-                onClick={handleClick}
-              >
-                Apply Changes
-              </Button>
-            </FormControl>
-            <CardContent>
-              <Typography variant="h6" sx={{ mt: 10 }}>
-                Can&apos;t find a preference that fits?
-                <br />
-                Suggest one here:
-              </Typography>
-            </CardContent>
-            <FormControl sx={{}}>
-              <InputLabel>Enter Suggestion</InputLabel>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
-                <TextField ></TextField>
+        <Box
+          sx={{
+            pt: 4,
+            width: "100%",
+            textAlign: "center",
+          }}
+        >
+          <Paper elevation={4}>
+            <Card sx={{ width: "100%", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h2">
+                  Signed In As: {userInfo.displayName}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Paper>
+        </Box>
+        <Box
+          sx={{
+            pt: 4,
+            height: "80%",
+            width: "100%",
+            textAlign: "center",
+          }}
+        >
+          <Paper elevation={6}>
+            <Card sx={{ width: "100%", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h2" sx={{ mt: 4 }}>
+                  Choose your Preferences!
+                </Typography>
+              </CardContent>
+              <FormControl sx={{ m: 1, width: 300, mt: 4 }}>
+                <InputLabel>Preferences</InputLabel>
+                <Select
+                  labelId="preferences-multiple-chip-label"
+                  id="preferences-multiple-chip"
+                  multiple
+                  value={selectedPrefs}
+                  onChange={handleChange}
+                  input={<OutlinedInput label="Preferences" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {selected.map((prefValue, i) => (
+                        <Chip
+                          key={i}
+                          label={prefValue
+                            .replace(/-/g, " ")
+                            .replace(/jobs/g, "")
+                            .toUpperCase()}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  {storedPrefs.map((pref, i) => (
+                    <MenuItem key={i} value={pref}>
+                      {pref
+                        .replace(/-/g, " ")
+                        .replace(/jobs/g, "")
+                        .toUpperCase()}
+                    </MenuItem>
+                  ))}
+                </Select>
                 <Button
                   variant="contained"
                   color="inherit"
                   size="large"
-                  sx={{height: "50px"}}
+                  sx={{ mt: 1 }}
+                  onClick={handleClick}
                 >
-                  Send
+                  Apply Changes
                 </Button>
-              </Box>
-              <FormHelperText sx={{ mb: 8}}>
-                Suggestion review may take up to 7 business days.
-              </FormHelperText>
-            </FormControl>
-          </Card>
-        </Paper>
-      </Box>
-    </Container>
-  );
-}
+              </FormControl>
+              <CardContent>
+                <Typography variant="h6" sx={{ mt: 10 }}>
+                  Can&apos;t find a preference that fits?
+                  <br />
+                  Suggest one here:
+                </Typography>
+              </CardContent>
+              <FormControl sx={{}}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                  }}
+                >
+                  <TextField
+                    maxLength="50"
+                    minLength=""
+                    value={suggestionInputValue}
+                    onChange={handleInputChange}
+                  ></TextField>
+                  <Button
+                    onClick={handleSend}
+                    variant="contained"
+                    color="inherit"
+                    size="large"
+                    sx={{ height: "50px" }}
+                  >
+                    Send
+                  </Button>
+                </Box>
+                <FormHelperText sx={{  }}>
+                  Suggestion review may take up to 7 business days.
+                </FormHelperText>
+              </FormControl>
+              <CardContent>
+                <Typography variant="h6">
+                  {suggestionResponse}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Paper>
+        </Box>
+      </Container>
+    );
+  };

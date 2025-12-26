@@ -15,6 +15,7 @@ export default function App() {
   const countRef = useRef(0);
   // if user is logged in
   const [userInfo, setUserInfo] = useState(null)
+  const [userPrefs, setUserPrefs] = useState([])
 
 
 useEffect(() => {
@@ -27,7 +28,9 @@ getUserInfo()
     axios.get('/api/user-info')
       .then(response => {
         const userObj = response.data;
+        const { preferences } = response.data
         setUserInfo(userObj)
+        setUserPrefs(preferences)
       })
       .catch(err => {
         console.error(err)
@@ -35,6 +38,7 @@ getUserInfo()
   }
 
   const getJobListings = (category, prefsArray) => {
+    
     axios
       // if category is undefined || is used to check that, then it sets category to be "nothing"
       // without || category being undefined literally returns '/findjobs/undefined' instead of '/findjobs/'
@@ -96,7 +100,7 @@ getUserInfo()
 
       <Route
         path="/findjobs"
-        element={<FindJobs jobs={jobResults} getJobListings={getJobListings} />}
+        element={userInfo ? <FindJobs jobs={jobResults} getJobListings={getJobListings} userInfo={userInfo} userPrefs={userPrefs}/> : null}
       ></Route>
     </Routes>
   </>

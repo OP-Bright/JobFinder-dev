@@ -46,7 +46,6 @@ passport.use(new GoogleStrategy({
 
 
 passport.serializeUser((user, cb) => {
-  console.log('serialize user:',user)
   cb(null, user.id);//only store user id
 
 });

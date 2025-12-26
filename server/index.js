@@ -142,7 +142,7 @@ app.get("/api/findjobs{/:category}", (req, res) => {
 });
 
 // endpoint allows client to input suggested preferences to database for admin review
-app.post("/api/findjobs", (req, res) => {
+app.post("/api/suggest-preferences", (req, res) => {
   const { name } = req.body;
   SuggestedPreference.create({
     name,
@@ -152,20 +152,6 @@ app.post("/api/findjobs", (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      // want to make a custom error message if input fails to save to database
-      // so that i can use the error type for the client side
-      if (err.name === "ValidationError") {
-        let errorsObj = {};
-        // make err object's "errors" property
-        // (which is an object) into an array
-        // of error type keys to use for output "errorsObj"
-        Object.keys(err.errors).forEach((key) => {
-          errorsObj[key] = err.errors[key].kind;
-        });
-        // send custom error obj to client for
-        // further custom error handling logic
-        return res.status(400).send(errorsObj);
-      }
       // MISC error handling
       res.status(500).send("Something Went Wrong");
     });
