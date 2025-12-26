@@ -78,7 +78,7 @@ function ResponsiveAppBar() {
 
              <MenuItem
               component={Link}
-              to=""
+              to="profile"
               onClick={handleCloseNavMenu}
             >
               Profile
