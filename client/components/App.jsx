@@ -7,64 +7,51 @@ import Home from "./Home.jsx";
 import SignIn from "./SignIn.jsx";
 import Profile from "./Profile.jsx";
 import FindJobs from "./FindJobs.jsx";
-import DashBoard  from "./Dashboard.jsx";
+import DashBoard from "./Dashboard.jsx";
 import NavBar from "./Navbar.jsx";
 
 export default function App() {
   const [jobResults, setJobResults] = useState([]);
   const countRef = useRef(0);
   // if user is logged in
-  const [userInfo, setUserInfo] = useState(null)
-  const [userPrefs, setUserPrefs] = useState([])
+  const [userInfo, setUserInfo] = useState(null);
+  const [userPrefs, setUserPrefs] = useState([]);
 
-
-useEffect(() => {
-getUserInfo()
-}, [])
-
-
+  useEffect(() => {
+    getUserInfo();
+  }, []);
 
   const getUserInfo = () => {
-    axios.get('/api/user-info')
-      .then(response => {
-        const userObj = response.data;
-        const { preferences } = response.data
-        setUserInfo(userObj)
-        setUserPrefs(preferences)
-      })
-      .catch(err => {
-        console.error(err)
-      });
-  }
-
-  const getJobListings = (category, prefsArray) => {
-    
     axios
-      // if category is undefined || is used to check that, then it sets category to be "nothing"
-      // without || category being undefined literally returns '/findjobs/undefined' instead of '/findjobs/'
-      .get(`/api/findjobs/${category || ""}`)
-      .then((jobsObj) => {
-        // if category not provided or we're doing initial render, return default job list
-        if (!category) {
-          const noPrefJobs = jobsObj.data;
-          setJobResults(noPrefJobs);
-        } else if (category && prefsArray.length === 1) {
-          // one category provided, replace all existing job listings
-          const firstPrefJobs = jobsObj.data;
-          setJobResults(firstPrefJobs);
-        } else {
-          // otherwise category was provided, but there's more than one preference
-          const additionalPrefJobs = jobsObj.data;
-          // helper only needed here to ensure possible job category overlap does
-          // not return duplicate results when merging additional category's job listings
-          setJobResults(
-            filterUniqueJobs(additionalPrefJobs.concat(jobResults))
-          );
-        }
+      .get("/api/user-info")
+      .then((response) => {
+        const userObj = response.data;
+        const { preferences } = response.data;
+        setUserInfo(userObj);
+        setUserPrefs(preferences);
       })
       .catch((err) => {
-        console.error("Failed to GET jobs from endpoint", err);
+        console.error(err);
       });
+  };
+
+  const getJobListings = async (prefsArray) => {
+    
+    if (prefsArray.length === 0) {
+      let defaultJobsObj = await axios.get("/api/findjobs").catch(err => console.error("Failed to GET default job listings", err))
+      const defaultJobs = defaultJobsObj.data
+      setJobResults(defaultJobs)
+    } else {
+      let combinedJobs = [];
+
+      for (const pref of prefsArray) {
+        let prefJobsObj =  await axios.get(`/api/findjobs/${pref}`).catch(err => console.error("Failed to GET preference job listings", err));
+        const prefJobs = prefJobsObj.data
+      combinedJobs.push(prefJobs)
+      }
+  setJobResults(filterUniqueJobs(combinedJobs.flat(prefsArray.length)))
+  
+    }
 
     // required to "update" the function when it's being used in child component.
     // without useRef + countRef an infinite loop is triggered since adding a function
@@ -74,7 +61,7 @@ getUserInfo()
     countRef.current += 1;
 
     // helper to ensure jobs state contains only unique job listings based on id
-    const filterUniqueJobs = (arr) => {
+    function filterUniqueJobs(arr) {
       const seenIds = new Set();
       return arr.filter((item) => {
         if (seenIds.has(item.id)) {
@@ -88,21 +75,33 @@ getUserInfo()
       });
     };
   };
-
+console.log(jobResults)
   return (
-  <>
-    <NavBar />
-    <Routes>
-      <Route path="/" element={<Home />}></Route>
-      <Route path="/signin" element={<SignIn />}></Route>
-      <Route path="/dashboard" element={<DashBoard />}></Route>
-      <Route path='/profile' element={<Profile userInfo={userInfo} />}></Route>
+    <>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<Home />}></Route>
+        <Route path="/signin" element={<SignIn />}></Route>
+        <Route path="/dashboard" element={<DashBoard />}></Route>
+        <Route
+          path="/profile"
+          element={<Profile userInfo={userInfo} />}
+        ></Route>
 
-      <Route
-        path="/findjobs"
-        element={userInfo ? <FindJobs jobs={jobResults} getJobListings={getJobListings} userInfo={userInfo} userPrefs={userPrefs}/> : null}
-      ></Route>
-    </Routes>
-  </>
+        <Route
+          path="/findjobs"
+          element={
+            userInfo ? (
+              <FindJobs
+                jobs={jobResults}
+                getJobListings={getJobListings}
+                userInfo={userInfo}
+                userPrefs={userPrefs}
+              />
+            ) : null
+          }
+        ></Route>
+      </Routes>
+    </>
   );
 }

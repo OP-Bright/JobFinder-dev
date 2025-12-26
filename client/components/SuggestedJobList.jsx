@@ -24,17 +24,12 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
 
 
   useEffect(() => {
-    if (userPrefs.length !== 0) {
-      for (const pref of userPrefs) {
-        getJobListingsEvent(pref, userPrefs);
-        return;
-      }
-    }
-    getJobListingsEvent()
+    getJobListingsEvent(userPrefs)
   }, [userPrefs]);
 
-  const getJobListingsEvent = useEffectEvent((pref, prefsArr) => {
-    getJobListings(pref, prefsArr);
+  const getJobListingsEvent = useEffectEvent((prefsArr) => {
+    console.log('event', prefsArr)
+    getJobListings(prefsArr);
   });
 
   // method used to render 5 more
@@ -58,8 +53,8 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
       <h1>Find Jobs</h1>
       <Container maxWidth="xl">
         <Grid container spacing={2} overflow="auto" className="job-list">
-          {jobsToRender.map((job) => {
-            return (
+          {jobs.length !== 0 ? jobsToRender.map((job) => (
+            
               <SuggestedListEntry
                 name={job.title}
                 link={job.redirect_url}
@@ -67,8 +62,8 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
                 key={job.id}
                 jobs={jobs}
               />
-            );
-          })}
+            
+          )) : <img style={{margin: 'auto'}} src="https://cdn.pixabay.com/animation/2022/07/29/03/42/03-42-22-68_512.gif"></img>}
         </Grid>
       </Container>
       <div
