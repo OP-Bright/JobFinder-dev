@@ -45,7 +45,7 @@ export default function SuggestedListEntry({
           >
             <CardActionArea onClick={handleOpen}>
               <CardContent>
-                <Typography variant="h6">{name}</Typography>
+                <Typography variant="h6" fontSize={18}>{name}</Typography>
               </CardContent>
               <Typography variant="body1">
                 {location.replace(/undefined,/g, "").replace(/undefined/g, "")}

@@ -209,7 +209,7 @@ export default function Profile({ userInfo }) {
                   Suggest one here:
                 </Typography>
               </CardContent>
-              <FormControl sx={{}}>
+              <FormControl>
                 <Box
                   sx={{
                     display: "flex",
@@ -233,7 +233,7 @@ export default function Profile({ userInfo }) {
                     Send
                   </Button>
                 </Box>
-                <FormHelperText sx={{  }}>
+                <FormHelperText>
                   Suggestion review may take up to 7 business days.
                 </FormHelperText>
               </FormControl>
