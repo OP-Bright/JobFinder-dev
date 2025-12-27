@@ -24,7 +24,7 @@ function SuggestedListEntry({ name, location, onClick }) {
             sx={{
               height: "100%",
               display: "flex",
-              textAlign: "center",
+              textAlign: "center"
             }}
             elevation={6}
           >

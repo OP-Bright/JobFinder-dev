@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import SuggestedListEntry from "./SuggestedListEntry.jsx";
+import AddBox from "@mui/icons-material/AddBox";
 import {
   Grid,
   Container,
@@ -46,7 +47,8 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
 
   // Pagination controls
   const goToNextPage = () => {
-    if (currentPage * JOBS_PER_PAGE < jobs.length) setCurrentPage((prev) => prev + 1);
+    if (currentPage * JOBS_PER_PAGE < jobs.length)
+      setCurrentPage((prev) => prev + 1);
   };
   const goToPreviousPage = () => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
@@ -57,7 +59,9 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
       <Container maxWidth="lg" sx={{ mt: 8 }}>
         {/* Zip code input */}
         <Box sx={{ justifyContent: "flex-end", display: "flex" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mr: "13px" }}>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 2, mr: "13px" }}
+          >
             <FormControl>
               <InputLabel htmlFor="zip-code-input">Enter Zip Code</InputLabel>
               <Input
@@ -82,7 +86,7 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
           <Grid
             container
             className="job-list"
-            sx={{ maxHeight: 645, minWidth: 0, minHeight: 0}}
+            sx={{ maxHeight: 645, minWidth: 0, minHeight: 0 }}
           >
             {jobs.length !== 0 ? (
               jobsToRender.map((job) => (
@@ -106,7 +110,9 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
 
         {/* Pagination controls */}
         {jobs.length > JOBS_PER_PAGE && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 2 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 2 }}
+          >
             <Button onClick={goToPreviousPage} disabled={currentPage === 1}>
               Previous
             </Button>
@@ -149,15 +155,36 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
               <Divider />
               <CardContent>
                 <Typography variant="body1" textAlign="center" fontSize={24}>
-                  {selectedJob.description
-                    .split("Job Purpose")[0]
-                    .split("Why join this team?")[0]}
+                  {
+                    selectedJob.description
+                      .split("Job Purpose")[0]
+                      .split("Why join this team?")[0]
+                  }
                 </Typography>
               </CardContent>
               <Divider />
-              <CardActions p={0}>
-                <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+              <CardActions
+                sx={{
+                  position: "relative",
+                  p: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
                   <Button
+                    sx={{
+                      ml: "72px",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
                     href={selectedJob.redirect_url}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -167,6 +194,10 @@ export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
                   >
                     Apply To Job
                   </Button>
+                </Box>
+                <Box sx={{}}>
+                  {/* Ryan Adds onClick functionality to this button to save listing*/}
+                  <Button title="Click to save listing"><AddBox fontSize="large"/></Button>
                 </Box>
               </CardActions>
             </Card>
