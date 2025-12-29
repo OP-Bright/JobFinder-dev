@@ -398,7 +398,6 @@ app.put("/api/jobs/:jobsId", isLoggedIn, (req, res) => {
   //find logged in user in db
   User.findById(req.user.id)
   .then((user) => {
-    console.log("USER", req.user)
     //if the user does not exist in db
     if(!user){
       //sc 404 user doesn't exist
@@ -432,6 +431,44 @@ app.put("/api/jobs/:jobsId", isLoggedIn, (req, res) => {
 
 })
 
+//DELETE to delete existing jobs
+app.delete("/api/jobs/:jobsId", isLoggedIn, (req, res) => {
+  //destructure jobsid obj from req.params (to locate updated job)
+  const { jobsId } = req.params;
+  //status = updated job status from req.body
+  const status = req.body.status
+
+  //find logged in user in db
+  User.findById(req.user.id)
+  .then((user) => {
+    //if the user does not exist in db
+    if(!user){
+      //sc 404 user doesn't exist
+      return res.sendStatus(404);
+    }
+   //reference jobs whos id = jobsId param (updated user job subdoc)
+   const job = user.jobs.id(jobsId)
+   //check if job exist, if not
+   if(!job){
+    //send sc
+    return res.sendStatus(500);
+   }
+   //delete updated user job from jobs array
+   job.deleteOne()
+
+   //persist deletion in db
+   return user.save()
+
+  }).then(() => {
+    //sc successful delete
+   res.sendStatus(204)
+  })//error handling
+  .catch((err)=> {
+    console.log(err, "Can not delete user job job");
+    res.sendStatus(500);
+  })
+
+})
 
 
 
