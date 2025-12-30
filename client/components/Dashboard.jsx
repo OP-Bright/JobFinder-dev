@@ -30,7 +30,6 @@ export default function Dashboard () {
     .then((job) => {
       //save job data in jobs state
       setJobs(job.data);
-      console.log(job.data)
       //error handling
     }).catch((err) => {
       console.log(err);
@@ -38,9 +37,17 @@ export default function Dashboard () {
 
   }, []) //useEffect runs once after mount
 
+
+  const CreateJob = () => {
+
+  }
+
+
+
+
   return (
     <Box>
-      <Button variant="contained" color="primary" onClick={() => setOpen(true)}> CREATE JOB
+      <Button variant="contained" color="primary" onClick={() => openDialog(true)}> CREATE JOB
 
       </Button>
 
