@@ -16,7 +16,7 @@ export default function Dashboard () {
   //set state of jobs when fetched from backend & rendered to page
   const [jobs, setJobs] = useState([]);// useState hook b/c jobs need re render when jobs state changes
   //set state for visibility of create jobs dialog false = hidden
-  const [dialog, openDialog] = useState(false);
+  const [openDialog, setDialog] = useState(false);
   //set state for adding a new job title
   const [title, setTitle ] = useState(""); //useState hook b/c input field updates as user types
   //set state for adding a status to job
@@ -27,7 +27,7 @@ export default function Dashboard () {
   //useEffect hook runs on mount renders all user jobs to dashboard
   useEffect(() => {
     //call to backend endpoint
-    axios.get('/api/jobs')
+    axios.get('/api/jobs', /*{ withCredentials: true }*/)
     //get jobs data in response
     .then((job) => {
       //save job data in jobs state
@@ -42,12 +42,12 @@ export default function Dashboard () {
   //handle creating a new job when user sets title and status and clicks save
   const CreateJob = () => {
     //post to backend to create a job
-    axios.post('/api/jobs', {title, status})
+    axios.post('/api/jobs', {title, status}, /*{ withCredentials: true }*/)
     .then((job) => {//when job created
       console.log(job)
       setJobs(job.data)
       //close dialog
-      openDialog(false);
+      setDialog(false);
       //set input to the initial state
       setTitle("");
       //set dropdown to default
@@ -65,16 +65,16 @@ export default function Dashboard () {
   return (
     /*create job button */
     <Box>
-      <Button variant="contained" color="primary" onClick={() => openDialog(true)}> CREATE JOB</Button>
+      <Button variant="contained" color="primary" onClick={() => setDialog(true)}> CREATE JOB</Button>
     {/* create job dialog, clicking outside closes*/}
-      <Dialog open={dialog} onClose={() => openDialog(false)}>
+      <Dialog open={openDialog} onClose={() => setDialog(false)}>
         <DialogContent>
           {/* text input displays default title, updates on every letter */ }
           <TextField label="Enter Job Title" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth sx={{mb: 2}} />
             <FormControl fullWidth>
-              <InputLabel> STATUS </InputLabel>
+              <InputLabel /*id="statusLabel"*/> STATUS </InputLabel>
               {/*shows default status updates status when changed to whatever is typed*/}
-              <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+              <Select /*labelId="statusLabel"*/ value={status} onChange={(e) => setStatus(e.target.value)}>
                  {/*loop through statuses*/}
                 {jobStatus.map((stat) => (
                 <MenuItem key={stat} value={stat}>{/*set menu items to statuses (each status can be selected)*/}
@@ -85,8 +85,9 @@ export default function Dashboard () {
             </FormControl>
         </DialogContent>
         <DialogActions>
-
-          <Button onClick={() => openDialog(false)}>CANCEL</Button>
+              {/*cancel job button reset to init state*/}
+          <Button onClick={() => setDialog(false)}>CANCEL</Button>
+          {/*save job button*/}
           <Button onClick={CreateJob} variant="contained" color="primary"> Save </Button>
         </DialogActions>
         </Dialog>
