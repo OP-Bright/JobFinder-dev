@@ -55,6 +55,7 @@ app.use(
 app.use(passport.initialize());
 app.use(express.urlencoded());
 app.use(passport.session());
+app.use(express.json());
 
 //ROUTES:
 
