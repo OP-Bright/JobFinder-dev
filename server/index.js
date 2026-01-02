@@ -125,7 +125,8 @@ app.get('/api/preferences', (req, res) => {
 // will send back default job list for now
 app.get("/api/findjobs{/:category}", (req, res) => {
   const { category } = req.params;
-  const results_per_page = 50;
+  const { where } = req.query
+  const results_per_page = 150;
   // if category parameter is not defined send client default job listings
   axios
     .get("http://api.adzuna.com/v1/api/jobs/us/search/1", {
@@ -134,6 +135,7 @@ app.get("/api/findjobs{/:category}", (req, res) => {
         app_key,
         results_per_page,
         category: category || "",
+        where: where || "",
       },
     })
     .then((jobs) => {
@@ -170,6 +172,7 @@ app.patch("/api/update-preferences/:id", isLoggedIn, (req, res) => {
     preferences
   })
   .then(success => {
+    console.log('yes')
     res.status(200).send("New preferences saved!")
   })
   .catch(err => {

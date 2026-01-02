@@ -1,104 +1,209 @@
-import React from "react";
-import { useState, useEffect, useEffectEvent } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import SuggestedListEntry from "./SuggestedListEntry.jsx";
-
-
-import { Grid, Container, Box, Button } from "@mui/material"
-import axios from "axios";
-
-/* 
-  EXPLANATION OF useEffectEvent:
-  Was used to prevent stale closure issue
-  that was happening when using getJobListings
-  method directly. Stale closures cause functions
-  to retain outdated references to variables from
-  its surrounding scope. This relevant here because
-  getJobListings is a method in App.jsx and relies
-  on its jobResults state to be updated.
-*/
+import AddBox from "@mui/icons-material/AddBox";
+import {
+  Grid,
+  Container,
+  Box,
+  Button,
+  Input,
+  FormControl,
+  InputLabel,
+  Typography,
+  Divider,
+  Modal,
+  Card,
+  CardContent,
+  CardActions,
+} from "@mui/material";
 
 export default function SuggestedJobList({ jobs, getJobListings, userPrefs }) {
-  let [limit, setLimit] = useState(15);
-  // executes logic on initial render & every time a change is made to userInfo
+  const JOBS_PER_PAGE = 15;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [userZipCodeInput, setUserZipCodeInput] = useState("");
+  const [selectedJob, setSelectedJob] = useState(null);
 
-
+  // Fetch jobs initially
   useEffect(() => {
-    getJobListingsEvent(userPrefs)
-  }, [userPrefs]);
+    getJobListings(userPrefs);
+  }, [getJobListings, userPrefs]);
 
-  const getJobListingsEvent = useEffectEvent((prefsArr) => {
-    console.log('event', prefsArr)
-    getJobListings(prefsArr);
-  });
-
-  // method used to render 5 more
-  // jobs listings to the page
-  const renderMoreJobs = () => {
-    setLimit((limit += 10));
+  // Handle zip code input
+  const handleInputChange = (e) => {
+    setUserZipCodeInput(e.target.value);
   };
 
-  /* Copy of current jobs listings state from App.jsx.
-   App.jsx's job listings contain more 
-   jobs than we want shown initially.
+  const handleApplyChanges = useCallback(() => {
+    getJobListings(userPrefs, userZipCodeInput);
+    setCurrentPage(1); // reset to first page
+  }, [getJobListings, userPrefs, userZipCodeInput]);
 
-   jobsToRender used in render logic instead of jobs array 
-   so they we have control of how many listings are shown.
-   */
-  const jobsToRender = jobs.slice(0, limit);
+  // Compute jobs to display for the current page
+  const jobsToRender = useMemo(() => {
+    const start = (currentPage - 1) * JOBS_PER_PAGE;
+    const end = start + JOBS_PER_PAGE;
+    return jobs.slice(start, end);
+  }, [jobs, currentPage]);
 
-  // styling for now is placeholder, MUI will be used later to bring everything together
+  // Pagination controls
+  const goToNextPage = () => {
+    if (currentPage * JOBS_PER_PAGE < jobs.length)
+      setCurrentPage((prev) => prev + 1);
+  };
+  const goToPreviousPage = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
   return (
-    <div>
-      <h1>Find Jobs</h1>
-      <Container maxWidth="lg">
-        <Box sx={{
-          mt: 4,
-          height: '100%',
-          width: '100%',
-          
-        }}>
-        <Grid container className="job-list" sx={{
-          maxHeight: 660,
-          minWidth: 0,
-          minHeight: 0,
-          overflow: 'auto'
-        }}>
-          {jobs.length !== 0 ? jobsToRender.map((job) => (
-            
-              <SuggestedListEntry
-                name={job.title}
-                link={job.redirect_url}
-                description={job.description}
-                location={`${job.location.area[3]}, ${job.location.area[1]}`}
-                key={job.id}
-                jobs={jobs}
-                
+    <>
+      <Container maxWidth="lg" sx={{ mt: 8 }}>
+        {/* Zip code input */}
+        <Box sx={{ justifyContent: "flex-end", display: "flex" }}>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 2, mr: "13px" }}
+          >
+            <FormControl>
+              <InputLabel htmlFor="zip-code-input">Enter Zip Code</InputLabel>
+              <Input
+                id="zip-code-input"
+                onChange={handleInputChange}
+                value={userZipCodeInput}
               />
-            
-          )) : <img style={{margin: 'auto'}} src="https://cdn.pixabay.com/animation/2022/07/29/03/42/03-42-22-68_512.gif"></img>}
-        </Grid>
+            </FormControl>
+            <Button
+              onClick={handleApplyChanges}
+              variant="contained"
+              color="inherit"
+              sx={{ height: "50px" }}
+            >
+              Apply Changes
+            </Button>
+          </Box>
         </Box>
-      </Container>
-      <div
-        className="load-more-jobs"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: "10px",
-          pt: 8
 
-        }}
-      >
-        {jobs.length !== 0 ? <Button
-        size="large"
-        flex="1" 
-          onClick={() => {
-            renderMoreJobs();
-          }}
+        {/* Job list */}
+        <Box sx={{ mt: 1, height: "100%", width: "100%" }}>
+          <Grid
+            container
+            className="job-list"
+            sx={{ maxHeight: 645, minWidth: 0, minHeight: 0 }}
+          >
+            {jobs.length !== 0 ? (
+              jobsToRender.map((job) => (
+                <SuggestedListEntry
+                  name={job.title}
+                  link={job.redirect_url}
+                  description={job.description}
+                  location={`${job.location.area[3]}, ${job.location.area[1]}`}
+                  key={job.id}
+                  onClick={() => setSelectedJob(job)}
+                />
+              ))
+            ) : (
+              <img
+                style={{ margin: "auto" }}
+                src="https://cdn.pixabay.com/animation/2022/07/29/03/42/03-42-22-68_512.gif"
+              />
+            )}
+          </Grid>
+        </Box>
+
+        {/* Pagination controls */}
+        {jobs.length > JOBS_PER_PAGE && (
+          <Box
+            sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 2 }}
+          >
+            <Button onClick={goToPreviousPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            <Typography sx={{ display: "flex", alignItems: "center" }}>
+              Page {currentPage}
+            </Typography>
+            <Button
+              onClick={goToNextPage}
+              disabled={currentPage * JOBS_PER_PAGE >= jobs.length}
+            >
+              Next
+            </Button>
+          </Box>
+        )}
+      </Container>
+
+      {/* Single Modal for selected job */}
+      {selectedJob && (
+        <Modal
+          open={true}
+          onClose={() => setSelectedJob(null)}
+          aria-labelledby="full-job-listing-view"
+          aria-describedby="full-job-listing-view"
         >
-          Load More Jobs
-        </Button> : null}
-      </div>
-    </div>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              flexDirection: "row",
+            }}
+          >
+            <Card sx={{ width: "100%", height: "100%" }}>
+              <CardContent>
+                <Typography variant="h5" textAlign="center">
+                  {selectedJob.title}
+                </Typography>
+              </CardContent>
+              <Divider />
+              <CardContent>
+                <Typography variant="body1" textAlign="center" fontSize={24}>
+                  {
+                    selectedJob.description
+                      .split("Job Purpose")[0]
+                      .split("Why join this team?")[0]
+                  }
+                </Typography>
+              </CardContent>
+              <Divider />
+              <CardActions
+                sx={{
+                  position: "relative",
+                  p: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Button
+                    sx={{
+                      ml: "72px",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                    href={selectedJob.redirect_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                  >
+                    Apply To Job
+                  </Button>
+                </Box>
+                <Box sx={{}}>
+                  {/* Ryan Adds onClick functionality to this button to save listing*/}
+                  <Button title="Click to save listing"><AddBox fontSize="large"/></Button>
+                </Box>
+              </CardActions>
+            </Card>
+          </Box>
+        </Modal>
+      )}
+    </>
   );
 }

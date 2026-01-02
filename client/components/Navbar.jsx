@@ -42,7 +42,7 @@ function ResponsiveAppBar() {
             component="div"
             sx={{ flexGrow: 1, fontWeight: 700 }}
           >
-            Job Find
+            Job Finder
           </Typography>
 
           <Menu
