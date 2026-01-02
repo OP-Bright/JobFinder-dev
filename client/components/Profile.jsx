@@ -50,7 +50,6 @@ export default function Profile({ userInfo, userPrefs, getUserInfo }) {
   // on intitial render/on change of stored preferences,
   // trigger rerender and update storedPrefs state
   useEffect(() => {
-    console.log('render')
     if (userInfo && userPrefs.length !== 0) {
       setSelectedPrefs(userPrefs);
     }
