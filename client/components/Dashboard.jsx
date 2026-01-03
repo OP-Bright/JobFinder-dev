@@ -59,9 +59,7 @@ export default function Dashboard () {
 
   }
 
-
-
-
+  
   return (
     /*create job button */
     <Box>
