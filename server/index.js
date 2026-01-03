@@ -29,8 +29,8 @@ const port = 3000;
 function isLoggedIn(req, res, next) {
   //check if req has a user
   //if it does, move to next middleware fn
-  //if not return 401 (unauthorized)
-  req.user ? next() : res.sendStatus(401);
+  //if not redirect to home page
+  req.user ? next() : res.redirect('/');
 }
 
 
@@ -172,7 +172,6 @@ app.patch("/api/update-preferences/:id", isLoggedIn, (req, res) => {
     preferences
   })
   .then(success => {
-    console.log('yes')
     res.status(200).send("New preferences saved!")
   })
   .catch(err => {
@@ -344,8 +343,6 @@ app.get("/api/jobs", isLoggedIn, (req, res) => {
   //fetches user doc by id
   User.findById(req.user.id)//req.user comes from passport session (id serialized from passport)
    .then((user) => {
-    //if user found show their display name
-     console.log('User found:', user.displayName);
      //send sc and user jobs data
      res.status(200).send(user.jobs);//from embedded jobs array
     })

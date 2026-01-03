@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useCallback, useEffect } from "react";
-import { Routes, Route } from "react-router";
+import { Routes, Route, Navigate } from "react-router";
 import axios from "axios";
 
 import Home from "./Home.jsx";
@@ -28,30 +28,36 @@ export default function App() {
   const [jobResults, setJobResults] = useState([]);
   // if user is logged in
   const [userInfo, setUserInfo] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [userPrefs, setUserPrefs] = useState([]);
 
   useEffect(() => {
-    getUserInfo();
+      getUserInfo();
   }, []);
-
 
   const getUserInfo = useCallback(() => {
     axios
       .get("/api/user-info")
       .then((response) => {
+        if (typeof response.data === "string") {
+          // do nothing
+        } else {
         const userObj = response.data;
         const { preferences } = response.data;
         setUserInfo(userObj);
         setUserPrefs(preferences);
+        }
       })
       .catch((err) => {
         console.error(err);
-      });
+      })
+      .finally(() => {
+        setAuthChecked(true);
+      })
   }, []);
 
-  jobResults;
   const getJobListings = useCallback(async (prefsArray, zipCode) => {
-    if (prefsArray.length === 0) {
+    if (!prefsArray) {
       let defaultJobsObj = await axios
         .get("/api/findjobs", { params: { where: zipCode || null } })
         .catch((err) =>
@@ -93,26 +99,32 @@ export default function App() {
     <>
       <NavBar />
       <Routes>
-        <Route path="/" element={<Home />}></Route>
+        <Route
+          path="/"
+          element={<Home getJobListings={getJobListings} jobs={jobResults} />}
+        ></Route>
         <Route path="/signin" element={<SignIn />}></Route>
-        <Route path="/dashboard" element={<DashBoard />}></Route>
+        <Route
+          path="/dashboard"
+          element={userInfo ? <DashBoard /> : <Navigate to="/signin" replace />}
+        ></Route>
         <Route
           path="/profile"
-          element={
-            userInfo && <Profile userPrefs={userPrefs} getUserInfo={getUserInfo} userInfo={userInfo} />
-          }
-        ></Route>
-
+          element={ !authChecked ? ( <div></div> ) : userInfo ? (<Profile userPrefs={userPrefs} getUserInfo={getUserInfo} userInfo={userInfo}/> ) : <Navigate to="/signin" />
+          }>
+        </Route>
         <Route
           path="/findjobs"
           element={
-            userInfo && (
+            userInfo ? (
               <FindJobs
                 jobs={jobResults}
                 getJobListings={getJobListings}
                 userInfo={userInfo}
                 userPrefs={userPrefs}
               />
+            ) : (
+              <Navigate to="/signin" replace />
             )
           }
         ></Route>
