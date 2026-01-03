@@ -5,7 +5,7 @@ import { useState } from "react";
 import axios from "axios";
 
 //accepts job prop from statusSection
-export default function JobListEntry ({job}){
+export default function JobListEntry ({job, currentUser}){
 
   // REPORTING STUFF
   const [warnMessage, setWarnMessage] = useState(false);
@@ -60,7 +60,7 @@ export default function JobListEntry ({job}){
       getReportedLink(reportedUrl).then((reportObj) => {
         if (reportObj) {
           // if it has...
-          if (reportObj.data.usersReported.includes("fakeID-Client")) {
+          if (reportObj.data.usersReported.includes(currentUser._id)) {
             // has the user already reported it?
             // if so, display a message saying that they have already reported this link.
             setWarnMessage(true);
@@ -68,7 +68,7 @@ export default function JobListEntry ({job}){
           } else {
             // if not...
             // make a PATCH request, and send the current userID and related link.
-            patchReport("example.com", "fakeID-Client").then(() => {
+            patchReport(job.link, currentUser._id).then(() => {
               // (for this example, the link will always be example.com, but really it would be attatched to the job that the report button is attatched to.)
               // once the request is complete, display the success message.
               setSuccessMessage(true);
@@ -76,7 +76,7 @@ export default function JobListEntry ({job}){
           }
         } else {
           // if it has not...
-          postReport("example.com", "fakeID-Client").then(() => {
+          postReport(job.link, currentUser._id).then(() => {
             // make a POST request to post the new report.
             // once the post request has gone through, display the success message.
             setSuccessMessage(true);

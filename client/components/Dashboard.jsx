@@ -11,7 +11,7 @@ import JobList from "./JobList.jsx"
 const jobStatus = ["applied", "interviewing", "offer", "rejected"]
 
 //create dashboard component
-export default function Dashboard () {
+export default function Dashboard ({ currentUser }) {
 
   //state of jobs
   const [jobs, setJobs] = useState([]);//jobs need re render when jobs state changes
@@ -153,7 +153,7 @@ export default function Dashboard () {
           <Button onClick={CreateJob} variant="contained" color="primary"> Save </Button>
         </DialogActions>
         </Dialog>
-        <JobList jobs={jobs} /*onUpdate={UpdateJob}*/ />
+        <JobList jobs={jobs} /*onUpdate={UpdateJob}*/ currentUser={currentUser} />
 
     </Box>
 

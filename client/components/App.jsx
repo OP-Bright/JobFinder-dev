@@ -110,7 +110,7 @@ export default function App() {
             !authChecked ? (
               <div></div>
             ) : userInfo ? (
-              <DashBoard />
+              <DashBoard currentUser={userInfo}/>
             ) : (
               <Navigate to="/signin" replace />
             )
