@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 
 import { useState, useEffect } from "react";
-import { Box, Button , Dialog, DialogContent, TextField, FormControl, InputLabel, MenuItem, DialogActions, Select } from "@mui/material"
+import { Box, Button , Dialog, DialogContent, TextField, FormControl, InputLabel, MenuItem, DialogActions, Select, Alert } from "@mui/material"
 
 import JobList from "./JobList.jsx"
 
@@ -24,7 +24,38 @@ export default function Dashboard () {
   //state of job link
   const [link, setLink] = useState("");
 
+  // REPORTING STUFF
+  const [reportCount, setReportCount] = useState(0); // just used to tell the user how many people have reported the link.
+  const [reportWarning, setReportWarning] = useState(false); // tells the app whether or not it needs to display a warning to the user. 
 
+  const getReportedLink = (url) => {
+    return axios
+      .get("/api/reported-links", url ? { params: { link: url } } : {})
+      .catch((err) => {
+        console.error(
+          `Something went wrong while GETting a report. Url passed in: ${url}`,
+          err
+        );
+      });
+  };
+
+  // checks if the link provided has been reported before.
+  // if it has,
+  // grab the data, and see how many times its been reported, i.e, the length of userIDs.
+  // if it's 3 or greater...
+  //display a warning, along with the number of users who have reported the link
+  // they can still input it but it lets them know.
+  // if it has not, it doesn't need to do a thing!
+  const handleClickOffInput = (inputValue) => {
+    getReportedLink(inputValue).then((reportObj) => {
+      if(reportObj) {
+        if (reportObj.data.usersReported.length >= 3) {
+          setReportCount(reportObj.data.usersReported.length);
+          setReportWarning(true);
+        }
+      }
+    });
+  };
 
   //useEffect hook runs on mount renders all user jobs to dashboard
   useEffect(() => {
@@ -94,7 +125,14 @@ export default function Dashboard () {
         <DialogContent>
           {/* text input displays default title, onChange sets title to keystroke */ }
           <TextField required label="Enter Job Title" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth sx={{mb: 2}} />
-              <TextField label="Enter Job Link" value={link} onChange={(e) => setLink(e.target.value)} fullWidth sx={{mb: 2}} />
+              <TextField label="Enter Job Link" value={link} onChange={(e) => setLink(e.target.value)} fullWidth sx={{mb: 2}} onBlur={(event) => {handleClickOffInput(event.target.value)}}/>
+              {reportWarning ? (
+                <Alert severity="warning">
+                  Are you sure you want to add this job? {reportCount} users have reported this job listing as fraudulent.
+                </Alert>
+              ) : (
+                <></>
+              )}
             <FormControl fullWidth>
               <InputLabel>STATUS</InputLabel>
               {/*shows default status, onChange sets status to status */}
