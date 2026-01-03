@@ -16,7 +16,7 @@ module.exports = {
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        type: 'asset/resource',
+        type: "asset/resource",
       },
       {
         test: /\.(?:js|jsx|mjs|cjs)$/,
@@ -32,6 +32,10 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        type: "asset/resource",
+      },
     ],
   },
   plugins: [
@@ -39,5 +43,4 @@ module.exports = {
       template: "./client/index.html",
     }),
   ],
-
 };
