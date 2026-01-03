@@ -32,7 +32,7 @@ export default function App() {
   const [userPrefs, setUserPrefs] = useState([]);
 
   useEffect(() => {
-      getUserInfo();
+    getUserInfo();
   }, []);
 
   const getUserInfo = useCallback(() => {
@@ -42,10 +42,10 @@ export default function App() {
         if (typeof response.data === "string") {
           // do nothing
         } else {
-        const userObj = response.data;
-        const { preferences } = response.data;
-        setUserInfo(userObj);
-        setUserPrefs(preferences);
+          const userObj = response.data;
+          const { preferences } = response.data;
+          setUserInfo(userObj);
+          setUserPrefs(preferences);
         }
       })
       .catch((err) => {
@@ -53,7 +53,7 @@ export default function App() {
       })
       .finally(() => {
         setAuthChecked(true);
-      })
+      });
   }, []);
 
   const getJobListings = useCallback(async (prefsArray, zipCode) => {
@@ -106,17 +106,38 @@ export default function App() {
         <Route path="/signin" element={<SignIn />}></Route>
         <Route
           path="/dashboard"
-          element={userInfo ? <DashBoard /> : <Navigate to="/signin" replace />}
+          element={
+            !authChecked ? (
+              <div></div>
+            ) : userInfo ? (
+              <DashBoard />
+            ) : (
+              <Navigate to="/signin" replace />
+            )
+          }
         ></Route>
         <Route
           path="/profile"
-          element={ !authChecked ? ( <div></div> ) : userInfo ? (<Profile userPrefs={userPrefs} getUserInfo={getUserInfo} userInfo={userInfo}/> ) : <Navigate to="/signin" />
-          }>
-        </Route>
+          element={
+            !authChecked ? (
+              <div></div>
+            ) : userInfo ? (
+              <Profile
+                userPrefs={userPrefs}
+                getUserInfo={getUserInfo}
+                userInfo={userInfo}
+              />
+            ) : (
+              <Navigate to="/signin" />
+            )
+          }
+        ></Route>
         <Route
           path="/findjobs"
           element={
-            userInfo ? (
+            !authChecked ? (
+              <div></div>
+            ) : userInfo ? (
               <FindJobs
                 jobs={jobResults}
                 getJobListings={getJobListings}
